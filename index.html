@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ZepTrack Recipes">
+<meta name="theme-color" content="#0d1117">
+<title>ZepTrack Recipes</title>
+<link rel="manifest" href="manifest.json">
+
+<!-- Inline SVG icon for PWA (no-title version) as apple-touch-icon via data URI -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230d1117'/%3E%3Ccircle cx='256' cy='256' r='200' fill='none' stroke='%235b6ef5' stroke-width='10' stroke-dasharray='1050 80' /%3E%3Ccircle cx='256' cy='256' r='200' fill='none' stroke='%239b7ff7' stroke-width='10' stroke-dasharray='80 1050' stroke-dashoffset='-1050'/%3E%3Ccircle cx='60' cy='280' r='18' fill='%239b7ff7'/%3E%3Ccircle cx='452' cy='232' r='18' fill='%235b6ef5'/%3E%3Crect x='173' y='158' width='16' height='130' rx='8' fill='%237b8cf7' opacity='.9'/%3E%3Crect x='148' y='158' width='12' height='52' rx='6' fill='%237b8cf7' opacity='.9'/%3E%3Crect x='189' y='158' width='12' height='52' rx='6' fill='%237b8cf7' opacity='.9'/%3E%3Crect x='323' y='158' width='16' height='130' rx='8' fill='%237b8cf7' opacity='.9'/%3E%3Cpath d='M339 158 Q380 188 339 260' fill='%237b8cf7' opacity='.9'/%3E%3Ctext x='256' y='308' text-anchor='middle' font-family='Arial Black,Arial' font-weight='900' font-size='180' fill='white'%3EZ%3C/text%3E%3C/svg%3E">
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:        #0d1117;
+  --bg2:       #161b22;
+  --bg3:       #1c2128;
+  --card:      #1c2128;
+  --border:    #30363d;
+  --border2:   #3d444d;
+  --text:      #e6edf3;
+  --muted:     #7d8590;
+  --accent:    #5b6ef5;
+  --accent2:   #9b7ff7;
+  --accentmid: #7b8cf7;
+  --green:     #3fb950;
+  --green-dk:  #238636;
+  --green-lt:  #0d2118;
+  --amber:     #d29922;
+  --amber-lt:  #272115;
+  --red:       #f85149;
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+}
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── HEADER ── */
+.site-header {
+  background: var(--bg2); padding: 0 1.25rem;
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 58px; border-bottom: 1px solid var(--border);
+}
+.header-logo { display: flex; align-items: center; gap: .6rem; text-decoration: none; }
+.header-logo svg { width: 34px; height: 34px; flex-shrink: 0; }
+.header-logo-text { font-family: var(--font-display); font-size: 1.15rem; color: var(--text); letter-spacing: .02em; }
+.header-logo-text span { color: var(--accentmid); font-style: italic; }
+.header-right { display: flex; align-items: center; gap: .75rem; }
+.version-badge {
+  font-size: .65rem; font-weight: 600; letter-spacing: .06em;
+  color: var(--muted); background: var(--bg3); border: 1px solid var(--border);
+  padding: .2rem .5rem; border-radius: 20px; cursor: default;
+}
+.update-badge {
+  display: none; font-size: .65rem; font-weight: 600;
+  color: #fff; background: var(--amber); border: none;
+  padding: .2rem .6rem; border-radius: 20px; cursor: pointer;
+  animation: pulse 2s infinite;
+}
+.update-badge.visible { display: inline-block; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
+.back-btn {
+  display: none; align-items: center; gap: .35rem;
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--muted); font-family: var(--font-body); font-size: .78rem;
+  padding: .35rem .8rem; border-radius: 20px; cursor: pointer; transition: all .15s;
+}
+.back-btn:hover { border-color: var(--accentmid); color: var(--accentmid); }
+.back-btn.visible { display: flex; }
+
+/* ── INDEX ── */
+#index-page { max-width: 920px; margin: 0 auto; padding: 1.75rem 1.25rem 4rem; }
+.search-wrap { position: relative; margin-bottom: 1.5rem; }
+.search-wrap svg { position: absolute; left: .9rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+#search-input {
+  width: 100%; padding: .75rem 1rem .75rem 2.6rem;
+  font-family: var(--font-body); font-size: .9rem;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg2); color: var(--text); outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+#search-input:focus { border-color: var(--accentmid); box-shadow: 0 0 0 3px rgba(123,140,247,.15); }
+#search-input::placeholder { color: var(--muted); }
+#no-results { display: none; text-align: center; padding: 3rem 1rem; color: var(--muted); font-size: .9rem; }
+
+/* ── CARDS ── */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+.recipe-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 1.1rem 1.15rem .9rem; cursor: pointer;
+  transition: transform .15s, border-color .15s, box-shadow .15s;
+  text-decoration: none; display: block;
+}
+.recipe-card:hover { transform: translateY(-2px); border-color: var(--accentmid); box-shadow: 0 4px 20px rgba(91,110,245,.15); }
+.card-top { margin-bottom: .65rem; }
+.card-tag {
+  display: inline-block; font-size: .65rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase;
+  background: rgba(91,110,245,.15); color: var(--accentmid); padding: .18rem .5rem; border-radius: 20px;
+}
+.card-tag.no-cook { background: rgba(210,153,34,.15); color: var(--amber); }
+.card-title { font-family: var(--font-display); font-size: 1.05rem; color: var(--text); line-height: 1.3; margin-bottom: .75rem; }
+.macro-pills { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .75rem; }
+.pill { font-size: .68rem; font-weight: 500; padding: .18rem .55rem; border-radius: 20px; }
+.pill.protein { background: rgba(91,110,245,.15); color: var(--accentmid); }
+.pill.fiber   { background: rgba(63,185,80,.12); color: var(--green); }
+.pill.cal     { background: rgba(248,81,73,.1); color: #f0706a; }
+.pill.carbs   { background: rgba(155,127,247,.15); color: var(--accent2); }
+
+/* CARD STATS */
+.card-stats { display: flex; align-items: center; gap: .5rem; padding-top: .65rem; border-top: 1px solid var(--border); }
+.card-stars-display { display: flex; gap: 1px; }
+.card-star-d { font-size: .95rem; color: var(--border2); line-height: 1; }
+.card-star-d.lit { color: var(--amber); }
+.card-cooked-display {
+  margin-left: auto; display: flex; align-items: center; gap: .3rem;
+  background: rgba(63,185,80,.1); border: 1px solid rgba(63,185,80,.2);
+  color: var(--green); font-size: .68rem; font-weight: 600;
+  padding: .2rem .5rem; border-radius: 20px; white-space: nowrap;
+}
+.card-cooked-display .count { background: var(--green-dk); color: #fff; border-radius: 10px; padding: .03rem .35rem; font-size: .62rem; min-width: 1rem; text-align: center; }
+.card-footer { font-size: .72rem; color: var(--muted); display: flex; align-items: center; gap: .3rem; margin-top: .6rem; }
+.card-arrow { margin-left: auto; color: var(--accentmid); }
+
+/* ── RECIPE PAGE ── */
+.recipe-page { display: none; max-width: 700px; margin: 0 auto; padding: 2rem 1.25rem 5rem; animation: fadeIn .18s ease; }
+.recipe-page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+.recipe-eyebrow { font-size: .7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--accentmid); margin-bottom: .5rem; }
+.recipe-title { font-family: var(--font-display); font-size: clamp(1.5rem, 4vw, 2.1rem); color: var(--text); line-height: 1.2; margin-bottom: .45rem; }
+.recipe-meta { font-size: .8rem; color: var(--muted); margin-bottom: 1.1rem; display: flex; flex-wrap: wrap; gap: .45rem; align-items: center; }
+.recipe-meta .dot { color: var(--border2); }
+
+/* CONTROLS ROW */
+.recipe-controls { display: flex; flex-wrap: wrap; align-items: stretch; gap: .6rem; margin-bottom: 1.2rem; }
+.ctrl-panel { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: .55rem .9rem; display: flex; align-items: center; gap: .65rem; }
+.ctrl-label { font-size: .75rem; color: var(--muted); font-weight: 500; white-space: nowrap; }
+.scaler-btn {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--bg3); border: 1px solid var(--border); cursor: pointer;
+  font-size: 1rem; display: flex; align-items: center; justify-content: center;
+  color: var(--text); transition: border-color .15s; flex-shrink: 0;
+}
+.scaler-btn:hover { border-color: var(--accentmid); color: var(--accentmid); }
+.scaler-count { font-size: .95rem; font-weight: 600; color: var(--text); min-width: 1.4rem; text-align: center; }
+.star-row { display: flex; gap: 2px; }
+.star { background: none; border: none; cursor: pointer; font-size: 1.25rem; color: var(--border2); padding: 0; line-height: 1; transition: color .1s; -webkit-tap-highlight-color: transparent; }
+.star.lit { color: var(--amber); }
+.cooked-ctrl { display: flex; align-items: center; background: rgba(63,185,80,.1); border: 1px solid rgba(63,185,80,.2); border-radius: 8px; overflow: hidden; white-space: nowrap; }
+.cooked-label { font-size: .75rem; font-weight: 600; color: var(--green); padding: .38rem .65rem; pointer-events: none; }
+.cooked-adj { background: none; border: none; border-left: 1px solid rgba(63,185,80,.2); color: var(--green); font-family: var(--font-body); font-size: .9rem; font-weight: 600; width: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .1s; padding: .38rem 0; }
+.cooked-adj:hover { background: rgba(63,185,80,.15); }
+.cooked-adj.minus { border-left: none; border-right: 1px solid rgba(63,185,80,.2); }
+.cooked-count { background: var(--green-dk); color: #fff; border-radius: 10px; padding: .04rem .4rem; font-size: .68rem; min-width: 1.2rem; text-align: center; margin: 0 .1rem; }
+
+/* MACRO BAR */
+.macro-bar { display: flex; flex-wrap: wrap; gap: .4rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: .85rem 1rem; margin-bottom: 1.75rem; }
+.macro-stat { flex: 1; min-width: 65px; text-align: center; }
+.macro-stat .val { font-size: 1.05rem; font-weight: 600; color: var(--text); display: block; }
+.macro-stat .lbl { font-size: .64rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+
+.section-title { font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); padding-bottom: .35rem; margin-bottom: .9rem; }
+.ingredients-list { list-style: none; margin-bottom: 1.75rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: .25rem .7rem; }
+.ingredients-list li { font-size: .87rem; padding: .3rem 0; border-bottom: 1px solid var(--border); display: flex; align-items: baseline; gap: .45rem; color: var(--text); }
+.ingredients-list li::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--accentmid); flex-shrink: 0; position: relative; top: -1px; }
+.ing-qty { font-weight: 500; color: var(--accentmid); white-space: nowrap; }
+
+.steps-list { list-style: none; margin-bottom: 1.75rem; }
+.steps-list li { display: flex; gap: .9rem; padding: .8rem 0; border-bottom: 1px solid var(--border); font-size: .87rem; line-height: 1.65; color: var(--text); }
+.step-num { font-family: var(--font-display); font-size: 1.15rem; color: var(--accentmid); flex-shrink: 0; width: 1.5rem; line-height: 1.4; }
+
+.tip-box { background: var(--amber-lt); border-left: 3px solid var(--amber); border-radius: 0 8px 8px 0; padding: .75rem .95rem; font-size: .83rem; color: #c9a227; margin-bottom: 1.75rem; line-height: 1.6; }
+.tip-box strong { font-weight: 600; color: var(--amber); }
+
+/* ZEPTRACK BLOCK */
+.zeptrack-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem 1.3rem; margin-top: 1.75rem; }
+.zeptrack-label { font-size: .64rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: .55rem; }
+.zeptrack-code { font-family: 'Courier New', monospace; font-size: .8rem; color: var(--green); line-height: 1.85; white-space: pre; }
+.copy-btn { margin-top: .7rem; background: var(--bg3); border: 1px solid var(--border); color: var(--muted); font-family: var(--font-body); font-size: .72rem; padding: .32rem .75rem; border-radius: 6px; cursor: pointer; transition: all .15s; }
+.copy-btn:hover { border-color: var(--accentmid); color: var(--accentmid); }
+.copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+/* SHOPPING LIST */
+.shop-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem 1.3rem; margin-top: 1rem; }
+.shop-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .9rem; }
+.shop-title { font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.shop-copy-btn { background: rgba(63,185,80,.1); border: 1px solid rgba(63,185,80,.2); color: var(--green); font-family: var(--font-body); font-size: .7rem; font-weight: 600; padding: .28rem .65rem; border-radius: 6px; cursor: pointer; transition: background .15s; }
+.shop-copy-btn:hover { background: rgba(63,185,80,.18); }
+.shop-copy-btn.copied { color: var(--green); }
+.shop-category { font-size: .64rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: .8rem 0 .35rem; padding-bottom: .22rem; border-bottom: 1px dashed var(--border); }
+.shop-category:first-of-type { margin-top: 0; }
+.shop-item { display: flex; align-items: center; gap: .55rem; padding: .28rem 0; font-size: .85rem; border-bottom: 1px solid var(--border); }
+.shop-item:last-child { border-bottom: none; }
+.shop-item-check { width: 15px; height: 15px; border: 1.5px solid var(--border2); border-radius: 3px; flex-shrink: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all .1s; }
+.shop-item-check.have-it { background: var(--green-dk); border-color: var(--green-dk); color: #fff; font-size: .62rem; }
+.shop-item-name { flex: 1; color: var(--text); }
+.shop-item-name.have-it-text { color: var(--green); font-weight: 500; }
+.shop-item-qty { font-weight: 600; color: var(--accentmid); white-space: nowrap; font-size: .8rem; }
+.shop-item-qty.have-it-qty { color: var(--green); }
+
+/* UPDATE MODAL */
+.update-modal {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7);
+  z-index: 200; align-items: center; justify-content: center; padding: 1.5rem;
+}
+.update-modal.visible { display: flex; }
+.update-modal-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; max-width: 360px; width: 100%; }
+.update-modal-title { font-family: var(--font-display); font-size: 1.2rem; color: var(--text); margin-bottom: .5rem; }
+.update-modal-body { font-size: .85rem; color: var(--muted); line-height: 1.6; margin-bottom: 1.2rem; }
+.update-modal-body strong { color: var(--text); }
+.update-modal-btns { display: flex; gap: .75rem; }
+.update-modal-btns button { flex: 1; padding: .55rem; border-radius: 8px; font-family: var(--font-body); font-size: .82rem; font-weight: 600; cursor: pointer; border: none; }
+.btn-update { background: var(--accent); color: #fff; }
+.btn-update:hover { background: #4a5ce0; }
+.btn-dismiss { background: var(--bg3); color: var(--muted); border: 1px solid var(--border) !important; }
+.btn-dismiss:hover { color: var(--text); }
+
+@media (max-width: 540px) {
+  .ingredients-list { grid-template-columns: 1fr; }
+  .macro-bar { gap: .25rem; }
+  .recipe-controls { gap: .5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGO SVG DEFS (reused inline) -->
+<svg style="display:none">
+  <symbol id="logo-icon" viewBox="0 0 100 100">
+    <rect width="100" height="100" rx="22" fill="#0d1117"/>
+    <circle cx="50" cy="50" r="39" fill="none" stroke="#5b6ef5" stroke-width="2.5" stroke-dasharray="204 16"/>
+    <circle cx="50" cy="50" r="39" fill="none" stroke="#9b7ff7" stroke-width="2.5" stroke-dasharray="16 204" stroke-dashoffset="-204"/>
+    <circle cx="12" cy="57" r="4.5" fill="#9b7ff7"/>
+    <circle cx="88" cy="43" r="4.5" fill="#5b6ef5"/>
+    <!-- fork -->
+    <rect x="30" y="24" width="5" height="42" rx="2.5" fill="#7b8cf7" opacity=".9"/>
+    <rect x="22" y="24" width="3.5" height="16" rx="1.75" fill="#7b8cf7" opacity=".9"/>
+    <rect x="38.5" y="24" width="3.5" height="16" rx="1.75" fill="#7b8cf7" opacity=".9"/>
+    <!-- knife -->
+    <rect x="65" y="24" width="5" height="42" rx="2.5" fill="#7b8cf7" opacity=".9"/>
+    <path d="M70 24 Q82 33 70 55" fill="#7b8cf7" opacity=".9"/>
+    <!-- Z -->
+    <text x="50" y="65" text-anchor="middle" font-family="Arial Black,Arial" font-weight="900" font-size="36" fill="white">Z</text>
+  </symbol>
+</svg>
+
+<header class="site-header">
+  <a class="header-logo" onclick="showIndex()" href="#" style="cursor:pointer">
+    <svg><use href="#logo-icon"/></svg>
+    <span class="header-logo-text">Zep<span>Track</span> Recipes</span>
+  </a>
+  <div class="header-right">
+    <span class="version-badge" id="ver-badge">v1.1</span>
+    <button class="update-badge" id="update-badge" onclick="showUpdateModal()">Update available</button>
+    <button class="back-btn" id="back-btn" onclick="showIndex()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      All Recipes
+    </button>
+  </div>
+</header>
+
+<!-- UPDATE MODAL -->
+<div class="update-modal" id="update-modal">
+  <div class="update-modal-box">
+    <div class="update-modal-title">Update available</div>
+    <div class="update-modal-body" id="update-modal-body">A newer version is available.</div>
+    <div class="update-modal-btns">
+      <button class="btn-update" onclick="doUpdate()">Reload to update</button>
+      <button class="btn-dismiss" onclick="dismissUpdate()">Later</button>
+    </div>
+  </div>
+</div>
+
+<!-- INDEX PAGE -->
+<div id="index-page">
+  <div style="max-width:920px;margin:0 auto;padding:1.75rem 1.25rem 4rem;">
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="search-input" placeholder="Search recipes, ingredients, or macros…" oninput="filterCards(this.value)" autocomplete="off">
+    </div>
+    <div id="no-results">No recipes match that search.</div>
+    <div class="cards-grid">
+
+      <a class="recipe-card" onclick="showRecipe('r1')" href="#r1" data-search="grilled salmon lentil tabbouleh protein fiber">
+        <div class="card-top"><span class="card-tag">Dinner</span></div>
+        <div class="card-title">Grilled Salmon with Lentil Tabbouleh</div>
+        <div class="macro-pills">
+          <span class="pill protein">52g protein</span><span class="pill fiber">14g fiber</span>
+          <span class="pill cal">115 cal/100g</span><span class="pill carbs">9.1g carbs</span>
+        </div>
+        <div class="card-stats">
+          <div class="card-stars-display" id="card-stars-r1"></div>
+          <div class="card-cooked-display">&#x1F373; <span class="count" id="card-count-r1">0</span></div>
+        </div>
+        <div class="card-footer">Serves 3 <span class="dot">&middot;</span> Grill + stovetop <span class="card-arrow">&#x2192;</span></div>
+      </a>
+
+      <a class="recipe-card" onclick="showRecipe('r2')" href="#r2" data-search="turkey stuffed bell peppers quinoa oven baked">
+        <div class="card-top"><span class="card-tag">Dinner</span></div>
+        <div class="card-title">Turkey-Stuffed Bell Peppers</div>
+        <div class="macro-pills">
+          <span class="pill protein">44g protein</span><span class="pill fiber">16g fiber</span>
+          <span class="pill cal">84 cal/100g</span><span class="pill carbs">7.9g carbs</span>
+        </div>
+        <div class="card-stats">
+          <div class="card-stars-display" id="card-stars-r2"></div>
+          <div class="card-cooked-display">&#x1F373; <span class="count" id="card-count-r2">0</span></div>
+        </div>
+        <div class="card-footer">Serves 3 <span class="dot">&middot;</span> Oven <span class="card-arrow">&#x2192;</span></div>
+      </a>
+
+      <a class="recipe-card" onclick="showRecipe('r3')" href="#r3" data-search="shrimp edamame stir fry brown rice bell pepper">
+        <div class="card-top"><span class="card-tag">Dinner</span></div>
+        <div class="card-title">Shrimp + Edamame Stir-Fry with Brown Rice</div>
+        <div class="macro-pills">
+          <span class="pill protein">46g protein</span><span class="pill fiber">6.5g fiber</span>
+          <span class="pill cal">104 cal/100g</span><span class="pill carbs">11.2g carbs</span>
+        </div>
+        <div class="card-stats">
+          <div class="card-stars-display" id="card-stars-r3"></div>
+          <div class="card-cooked-display">&#x1F373; <span class="count" id="card-count-r3">0</span></div>
+        </div>
+        <div class="card-footer">Serves 3 <span class="dot">&middot;</span> Stovetop <span class="card-arrow">&#x2192;</span></div>
+      </a>
+
+      <a class="recipe-card" onclick="showRecipe('r4')" href="#r4" data-search="white bean tuna salad lemon vinaigrette no cook arugula cannellini">
+        <div class="card-top"><span class="card-tag no-cook">No-Cook</span></div>
+        <div class="card-title">White Bean + Tuna Salad with Lemon Vinaigrette</div>
+        <div class="macro-pills">
+          <span class="pill protein">50g protein</span><span class="pill fiber">17g fiber</span>
+          <span class="pill cal">93 cal/100g</span><span class="pill carbs">8.3g carbs</span>
+        </div>
+        <div class="card-stats">
+          <div class="card-stars-display" id="card-stars-r4"></div>
+          <div class="card-cooked-display">&#x1F373; <span class="count" id="card-count-r4">0</span></div>
+        </div>
+        <div class="card-footer">Serves 3 <span class="dot">&middot;</span> No cook <span class="card-arrow">&#x2192;</span></div>
+      </a>
+
+      <a class="recipe-card" onclick="showRecipe('r5')" href="#r5" data-search="chickpea chicken thigh skillet zucchini kale spiced one pan">
+        <div class="card-top"><span class="card-tag">Dinner</span></div>
+        <div class="card-title">Spiced Chickpea + Chicken Thigh Skillet</div>
+        <div class="macro-pills">
+          <span class="pill protein">42g protein</span><span class="pill fiber">19g fiber</span>
+          <span class="pill cal">99 cal/100g</span><span class="pill carbs">5.3g carbs</span>
+        </div>
+        <div class="card-stats">
+          <div class="card-stars-display" id="card-stars-r5"></div>
+          <div class="card-cooked-display">&#x1F373; <span class="count" id="card-count-r5">0</span></div>
+        </div>
+        <div class="card-footer">Serves 3 <span class="dot">&middot;</span> One pan <span class="card-arrow">&#x2192;</span></div>
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<!-- RECIPE 1 -->
+<div class="recipe-page" id="r1">
+  <div class="recipe-eyebrow">Grill + Stovetop &middot; 35 min</div>
+  <h1 class="recipe-title">Grilled Salmon with Lentil Tabbouleh</h1>
+  <div class="recipe-meta"><span>~52g protein</span><span class="dot">&middot;</span><span>~14g fiber</span></div>
+  <div class="recipe-controls">
+    <div class="ctrl-panel"><span class="ctrl-label">Servings</span><button class="scaler-btn" onclick="changeServings('r1',-1)">&#x2212;</button><span class="scaler-count" id="srv-r1">3</span><button class="scaler-btn" onclick="changeServings('r1',1)">+</button></div>
+    <div class="ctrl-panel"><span class="ctrl-label">Rating</span><div class="star-row" id="stars-r1"></div></div>
+    <div class="ctrl-panel"><div class="cooked-ctrl"><button class="cooked-adj minus" onclick="adjCooked('r1',-1)">&#x2212;</button><span class="cooked-label">&#x1F373; Cooked it! <span class="cooked-count" id="count-r1">0</span></span><button class="cooked-adj" onclick="adjCooked('r1',1)">+</button></div></div>
+  </div>
+  <div class="macro-bar">
+    <div class="macro-stat"><span class="val">115</span><span class="lbl">Cal/100g</span></div>
+    <div class="macro-stat"><span class="val">8.2g</span><span class="lbl">Protein</span></div>
+    <div class="macro-stat"><span class="val">9.1g</span><span class="lbl">Carbs</span></div>
+    <div class="macro-stat"><span class="val">5.3g</span><span class="lbl">Fat</span></div>
+    <div class="macro-stat"><span class="val">2.1g</span><span class="lbl">Fiber</span></div>
+  </div>
+  <div class="section-title">Ingredients</div><ul class="ingredients-list" id="ing-r1"></ul>
+  <div class="section-title">Steps</div>
+  <ol class="steps-list">
+    <li><span class="step-num">1</span>Rinse lentils. Add to pot with water (2&times; lentil volume), bring to boil, reduce heat, simmer 18&ndash;20 min until tender but not mushy. Drain, spread on a tray to cool.</li>
+    <li><span class="step-num">2</span>Combine cooled lentils, cherry tomatoes, cucumber, red onion, and parsley in a bowl. Dress with lemon juice, olive oil, garlic, and salt. Toss and let sit while you grill.</li>
+    <li><span class="step-num">3</span>Pat salmon dry. Brush with olive oil, season with remaining salt and pepper.</li>
+    <li><span class="step-num">4</span>Heat grill or grill pan to medium-high. Grill salmon skin-side down 4 min, flip, cook 3&ndash;4 min more until flesh flakes easily. Do not move it until it releases naturally.</li>
+    <li><span class="step-num">5</span>Spoon tabbouleh into bowls, lay salmon on top. Squeeze extra lemon over everything.</li>
+  </ol>
+  <div class="tip-box"><strong>Tip:</strong> Lentils can be cooked a day ahead. Green or French (Puy) lentils hold shape best. Salmon done at 125&ndash;130&deg;F internal for medium.</div>
+  <div class="zeptrack-block"><div class="zeptrack-label">ZepTrack &middot; Per 100g</div><div class="zeptrack-code" id="code-r1">Recipe Name: Grilled Salmon with Lentil Tabbouleh
+Per 100g:
+Calories: 115
+Protein: 8.2g
+Carbs: 9.1g
+Fat: 5.3g
+Fiber: 2.1g</div><button class="copy-btn" onclick="copyMacros('code-r1',this)">Copy for ZepTrack</button></div>
+  <div class="shop-block"><div class="shop-header"><span class="shop-title">Shopping List</span><button class="shop-copy-btn" onclick="copyShopList('r1',this)">Copy needed items</button></div><div id="shop-r1"></div></div>
+</div>
+
+<!-- RECIPE 2 -->
+<div class="recipe-page" id="r2">
+  <div class="recipe-eyebrow">Oven &middot; 45 min</div>
+  <h1 class="recipe-title">Turkey-Stuffed Bell Peppers</h1>
+  <div class="recipe-meta"><span>~44g protein</span><span class="dot">&middot;</span><span>~16g fiber</span></div>
+  <div class="recipe-controls">
+    <div class="ctrl-panel"><span class="ctrl-label">Servings</span><button class="scaler-btn" onclick="changeServings('r2',-1)">&#x2212;</button><span class="scaler-count" id="srv-r2">3</span><button class="scaler-btn" onclick="changeServings('r2',1)">+</button></div>
+    <div class="ctrl-panel"><span class="ctrl-label">Rating</span><div class="star-row" id="stars-r2"></div></div>
+    <div class="ctrl-panel"><div class="cooked-ctrl"><button class="cooked-adj minus" onclick="adjCooked('r2',-1)">&#x2212;</button><span class="cooked-label">&#x1F373; Cooked it! <span class="cooked-count" id="count-r2">0</span></span><button class="cooked-adj" onclick="adjCooked('r2',1)">+</button></div></div>
+  </div>
+  <div class="macro-bar">
+    <div class="macro-stat"><span class="val">84</span><span class="lbl">Cal/100g</span></div>
+    <div class="macro-stat"><span class="val">5.6g</span><span class="lbl">Protein</span></div>
+    <div class="macro-stat"><span class="val">7.9g</span><span class="lbl">Carbs</span></div>
+    <div class="macro-stat"><span class="val">3.5g</span><span class="lbl">Fat</span></div>
+    <div class="macro-stat"><span class="val">1.2g</span><span class="lbl">Fiber</span></div>
+  </div>
+  <div class="section-title">Ingredients</div><ul class="ingredients-list" id="ing-r2"></ul>
+  <div class="section-title">Steps</div>
+  <ol class="steps-list">
+    <li><span class="step-num">1</span>Preheat oven to 400&deg;F. Lightly oil a baking dish large enough to hold all pepper halves upright.</li>
+    <li><span class="step-num">2</span>Rinse quinoa. Add to pot with equal volume water, bring to boil, cover, reduce to low. Cook 12&ndash;15 min until water is absorbed. Fluff with fork.</li>
+    <li><span class="step-num">3</span>Place pepper halves cut-side up in baking dish. Roast 10 min to soften slightly. Remove, keep oven on.</li>
+    <li><span class="step-num">4</span>Heat olive oil in skillet over medium-high. Add garlic, cook 30 sec. Add ground turkey, break apart, cook until no pink remains, ~5 min.</li>
+    <li><span class="step-num">5</span>Add diced tomatoes, cumin, paprika, salt, and pepper to skillet. Stir, simmer 2 min. Fold in spinach until wilted, then stir in cooked quinoa.</li>
+    <li><span class="step-num">6</span>Pack filling into par-baked pepper halves, mounding generously. Top each with cheese. Bake 15 min until cheese is melted and bubbly.</li>
+    <li><span class="step-num">7</span>Let sit 5 min before serving. Pairs well with hot sauce or plain Greek yogurt.</li>
+  </ol>
+  <div class="tip-box"><strong>Tip:</strong> Filling can be made a day ahead &mdash; stuff and bake from the fridge, add 5 min to bake time.</div>
+  <div class="zeptrack-block"><div class="zeptrack-label">ZepTrack &middot; Per 100g</div><div class="zeptrack-code" id="code-r2">Recipe Name: Turkey-Stuffed Bell Peppers
+Per 100g:
+Calories: 84
+Protein: 5.6g
+Carbs: 7.9g
+Fat: 3.5g
+Fiber: 1.2g</div><button class="copy-btn" onclick="copyMacros('code-r2',this)">Copy for ZepTrack</button></div>
+  <div class="shop-block"><div class="shop-header"><span class="shop-title">Shopping List</span><button class="shop-copy-btn" onclick="copyShopList('r2',this)">Copy needed items</button></div><div id="shop-r2"></div></div>
+</div>
+
+<!-- RECIPE 3 -->
+<div class="recipe-page" id="r3">
+  <div class="recipe-eyebrow">Stovetop &middot; 20 min</div>
+  <h1 class="recipe-title">Shrimp + Edamame Stir-Fry with Brown Rice</h1>
+  <div class="recipe-meta"><span>~46g protein</span><span class="dot">&middot;</span><span>~6.5g fiber</span></div>
+  <div class="recipe-controls">
+    <div class="ctrl-panel"><span class="ctrl-label">Servings</span><button class="scaler-btn" onclick="changeServings('r3',-1)">&#x2212;</button><span class="scaler-count" id="srv-r3">3</span><button class="scaler-btn" onclick="changeServings('r3',1)">+</button></div>
+    <div class="ctrl-panel"><span class="ctrl-label">Rating</span><div class="star-row" id="stars-r3"></div></div>
+    <div class="ctrl-panel"><div class="cooked-ctrl"><button class="cooked-adj minus" onclick="adjCooked('r3',-1)">&#x2212;</button><span class="cooked-label">&#x1F373; Cooked it! <span class="cooked-count" id="count-r3">0</span></span><button class="cooked-adj" onclick="adjCooked('r3',1)">+</button></div></div>
+  </div>
+  <div class="macro-bar">
+    <div class="macro-stat"><span class="val">104</span><span class="lbl">Cal/100g</span></div>
+    <div class="macro-stat"><span class="val">8.6g</span><span class="lbl">Protein</span></div>
+    <div class="macro-stat"><span class="val">11.2g</span><span class="lbl">Carbs</span></div>
+    <div class="macro-stat"><span class="val">2.7g</span><span class="lbl">Fat</span></div>
+    <div class="macro-stat"><span class="val">1.1g</span><span class="lbl">Fiber</span></div>
+  </div>
+  <div class="section-title">Ingredients</div><ul class="ingredients-list" id="ing-r3"></ul>
+  <div class="section-title">Steps</div>
+  <ol class="steps-list">
+    <li><span class="step-num">1</span>Whisk together soy sauce, sesame oil, rice vinegar, and red pepper flakes. Set aside.</li>
+    <li><span class="step-num">2</span>Cook brown rice per package instructions. Set aside.</li>
+    <li><span class="step-num">3</span>Heat 1 tsp oil in a large skillet over medium-high. Add brown rice, press flat, cook 3&ndash;4 min until lightly crisped. Transfer to a bowl.</li>
+    <li><span class="step-num">4</span>Wipe skillet, add 1 tbsp oil over high heat. Add shrimp in a single layer, cook 90 sec per side until pink and curled. Remove to a plate.</li>
+    <li><span class="step-num">5</span>Add remaining oil. Add red bell pepper, stir-fry 2&ndash;3 min. Add snap peas and edamame, cook 2 min more. Add garlic and ginger, toss 30 sec until fragrant.</li>
+    <li><span class="step-num">6</span>Return shrimp. Pour sauce over everything, toss to coat, cook 1 min until glazed.</li>
+    <li><span class="step-num">7</span>Divide brown rice between bowls, top with stir-fry. Garnish with green onions. Serve immediately.</li>
+  </ol>
+  <div class="tip-box"><strong>Tip:</strong> High heat is key &mdash; don&apos;t crowd the pan or shrimp steam instead of sear. Brown rice adds ~40g carbs vs cauliflower rice.</div>
+  <div class="zeptrack-block"><div class="zeptrack-label">ZepTrack &middot; Per 100g</div><div class="zeptrack-code" id="code-r3">Recipe Name: Shrimp + Edamame Stir-Fry with Brown Rice
+Per 100g:
+Calories: 104
+Protein: 8.6g
+Carbs: 11.2g
+Fat: 2.7g
+Fiber: 1.1g</div><button class="copy-btn" onclick="copyMacros('code-r3',this)">Copy for ZepTrack</button></div>
+  <div class="shop-block"><div class="shop-header"><span class="shop-title">Shopping List</span><button class="shop-copy-btn" onclick="copyShopList('r3',this)">Copy needed items</button></div><div id="shop-r3"></div></div>
+</div>
+
+<!-- RECIPE 4 -->
+<div class="recipe-page" id="r4">
+  <div class="recipe-eyebrow">No-Cook &middot; 10 min</div>
+  <h1 class="recipe-title">White Bean + Tuna Salad with Lemon Vinaigrette</h1>
+  <div class="recipe-meta"><span>~50g protein</span><span class="dot">&middot;</span><span>~17g fiber</span></div>
+  <div class="recipe-controls">
+    <div class="ctrl-panel"><span class="ctrl-label">Servings</span><button class="scaler-btn" onclick="changeServings('r4',-1)">&#x2212;</button><span class="scaler-count" id="srv-r4">3</span><button class="scaler-btn" onclick="changeServings('r4',1)">+</button></div>
+    <div class="ctrl-panel"><span class="ctrl-label">Rating</span><div class="star-row" id="stars-r4"></div></div>
+    <div class="ctrl-panel"><div class="cooked-ctrl"><button class="cooked-adj minus" onclick="adjCooked('r4',-1)">&#x2212;</button><span class="cooked-label">&#x1F373; Cooked it! <span class="cooked-count" id="count-r4">0</span></span><button class="cooked-adj" onclick="adjCooked('r4',1)">+</button></div></div>
+  </div>
+  <div class="macro-bar">
+    <div class="macro-stat"><span class="val">93</span><span class="lbl">Cal/100g</span></div>
+    <div class="macro-stat"><span class="val">8.0g</span><span class="lbl">Protein</span></div>
+    <div class="macro-stat"><span class="val">8.3g</span><span class="lbl">Carbs</span></div>
+    <div class="macro-stat"><span class="val">3.2g</span><span class="lbl">Fat</span></div>
+    <div class="macro-stat"><span class="val">2.0g</span><span class="lbl">Fiber</span></div>
+  </div>
+  <div class="section-title">Ingredients</div><ul class="ingredients-list" id="ing-r4"></ul>
+  <div class="section-title">Steps</div>
+  <ol class="steps-list">
+    <li><span class="step-num">1</span>Whisk together lemon juice, olive oil, Dijon, garlic, salt, and pepper in a large bowl until emulsified.</li>
+    <li><span class="step-num">2</span>Add cannellini beans to bowl. Toss to coat in vinaigrette, let sit 5 min &mdash; beans absorb flavor best when dressed first.</li>
+    <li><span class="step-num">3</span>Add cherry tomatoes, red onion, and capers. Toss gently.</li>
+    <li><span class="step-num">4</span>Flake tuna over the top in large chunks. Fold in once or twice, leaving visible pieces.</li>
+    <li><span class="step-num">5</span>Divide arugula between plates. Spoon salad over arugula. Taste, adjust salt and lemon. Serve immediately.</li>
+  </ol>
+  <div class="tip-box"><strong>Tip:</strong> Solid albacore holds texture better than chunk light. Salad keeps overnight without arugula &mdash; add greens fresh when serving.</div>
+  <div class="zeptrack-block"><div class="zeptrack-label">ZepTrack &middot; Per 100g</div><div class="zeptrack-code" id="code-r4">Recipe Name: White Bean + Tuna Salad with Lemon Vinaigrette
+Per 100g:
+Calories: 93
+Protein: 8.0g
+Carbs: 8.3g
+Fat: 3.2g
+Fiber: 2.0g</div><button class="copy-btn" onclick="copyMacros('code-r4',this)">Copy for ZepTrack</button></div>
+  <div class="shop-block"><div class="shop-header"><span class="shop-title">Shopping List</span><button class="shop-copy-btn" onclick="copyShopList('r4',this)">Copy needed items</button></div><div id="shop-r4"></div></div>
+</div>
+
+<!-- RECIPE 5 -->
+<div class="recipe-page" id="r5">
+  <div class="recipe-eyebrow">One Pan &middot; 40 min</div>
+  <h1 class="recipe-title">Spiced Chickpea + Chicken Thigh Skillet</h1>
+  <div class="recipe-meta"><span>~42g protein</span><span class="dot">&middot;</span><span>~19g fiber</span></div>
+  <div class="recipe-controls">
+    <div class="ctrl-panel"><span class="ctrl-label">Servings</span><button class="scaler-btn" onclick="changeServings('r5',-1)">&#x2212;</button><span class="scaler-count" id="srv-r5">3</span><button class="scaler-btn" onclick="changeServings('r5',1)">+</button></div>
+    <div class="ctrl-panel"><span class="ctrl-label">Rating</span><div class="star-row" id="stars-r5"></div></div>
+    <div class="ctrl-panel"><div class="cooked-ctrl"><button class="cooked-adj minus" onclick="adjCooked('r5',-1)">&#x2212;</button><span class="cooked-label">&#x1F373; Cooked it! <span class="cooked-count" id="count-r5">0</span></span><button class="cooked-adj" onclick="adjCooked('r5',1)">+</button></div></div>
+  </div>
+  <div class="macro-bar">
+    <div class="macro-stat"><span class="val">99</span><span class="lbl">Cal/100g</span></div>
+    <div class="macro-stat"><span class="val">7.9g</span><span class="lbl">Protein</span></div>
+    <div class="macro-stat"><span class="val">5.3g</span><span class="lbl">Carbs</span></div>
+    <div class="macro-stat"><span class="val">5.0g</span><span class="lbl">Fat</span></div>
+    <div class="macro-stat"><span class="val">1.3g</span><span class="lbl">Fiber</span></div>
+  </div>
+  <div class="section-title">Ingredients</div><ul class="ingredients-list" id="ing-r5"></ul>
+  <div class="section-title">Steps</div>
+  <ol class="steps-list">
+    <li><span class="step-num">1</span>Mix cumin, smoked paprika, turmeric, red pepper flakes, salt, and pepper. Pat chicken dry, rub all over with half the spice mix.</li>
+    <li><span class="step-num">2</span>Heat olive oil in a large skillet over medium-high. Sear chicken smooth-side down 4&ndash;5 min until deep golden. Flip, cook 3 min more. Remove to a plate.</li>
+    <li><span class="step-num">3</span>Reduce heat to medium. Add garlic, cook 30 sec. Add chickpeas and remaining spice mix, stir to coat, cook 2 min until chickpeas start to crisp.</li>
+    <li><span class="step-num">4</span>Add zucchini, toss with chickpeas, cook 2 min. Pour in broth, scraping up any browned bits.</li>
+    <li><span class="step-num">5</span>Nestle chicken back in. Cover, reduce to medium-low, cook 18&ndash;20 min until chicken reaches 165&deg;F.</li>
+    <li><span class="step-num">6</span>Uncover, push chicken aside, fold in kale in batches. Stir until wilted, ~2 min.</li>
+    <li><span class="step-num">7</span>Squeeze lemon over skillet. Taste, adjust salt. Serve directly from pan.</li>
+  </ol>
+  <div class="tip-box"><strong>Tip:</strong> Don&apos;t move the chicken once it hits the pan &mdash; let it release naturally for a proper sear. Leftovers reheat well with a splash of broth.</div>
+  <div class="zeptrack-block"><div class="zeptrack-label">ZepTrack &middot; Per 100g</div><div class="zeptrack-code" id="code-r5">Recipe Name: Spiced Chickpea + Chicken Thigh Skillet
+Per 100g:
+Calories: 99
+Protein: 7.9g
+Carbs: 5.3g
+Fat: 5.0g
+Fiber: 1.3g</div><button class="copy-btn" onclick="copyMacros('code-r5',this)">Copy for ZepTrack</button></div>
+  <div class="shop-block"><div class="shop-header"><span class="shop-title">Shopping List</span><button class="shop-copy-btn" onclick="copyShopList('r5',this)">Copy needed items</button></div><div id="shop-r5"></div></div>
+</div>
+
+<script>
+const APP_VERSION = '1.1';
+const GITHUB_VERSION_URL = 'https://raw.githubusercontent.com/spencer-thompson-2-vu/zeptrack-recipes/main/version.json';
+
+const RECIPES = {
+  r1: { base:3, ingredients: [
+    {name:'Green lentils (dry)',base:1.25,unit:'cup',cat:'pantry'},
+    {name:'Olive oil',base:4.5,unit:'tbsp',cat:'pantry'},
+    {name:'Salt',base:1.25,unit:'tsp',cat:'pantry'},
+    {name:'Black pepper',base:0.75,unit:'tsp',cat:'pantry'},
+    {name:'Salmon fillets (6oz each)',base:4.5,unit:null,cat:'meat'},
+    {name:'Cherry tomatoes',base:1.5,unit:'cup',cat:'produce'},
+    {name:'Cucumber',base:1.5,unit:null,cat:'produce'},
+    {name:'Red onion',base:0.5,unit:'cup',cat:'produce'},
+    {name:'Fresh parsley',base:0.75,unit:'cup',cat:'produce'},
+    {name:'Lemons',base:3,unit:null,cat:'produce'},
+    {name:'Garlic cloves',base:3,unit:null,cat:'produce'},
+  ]},
+  r2: { base:3, ingredients: [
+    {name:'Canned diced tomatoes (14oz)',base:1,unit:'can',cat:'pantry'},
+    {name:'Quinoa (dry)',base:0.75,unit:'cup',cat:'pantry'},
+    {name:'Olive oil',base:1.5,unit:'tbsp',cat:'pantry'},
+    {name:'Cumin',base:1.5,unit:'tsp',cat:'pantry'},
+    {name:'Smoked paprika',base:0.75,unit:'tsp',cat:'pantry'},
+    {name:'Salt',base:1.25,unit:'tsp',cat:'pantry'},
+    {name:'Black pepper',base:0.75,unit:'tsp',cat:'pantry'},
+    {name:'Shredded mozzarella or pepper jack',base:0.75,unit:'cup',cat:'dairy'},
+    {name:'Lean ground turkey (93%)',base:13.5,unit:'oz',cat:'meat'},
+    {name:'Bell peppers (large)',base:4.5,unit:null,cat:'produce'},
+    {name:'Baby spinach',base:3,unit:'cup',cat:'produce'},
+    {name:'Garlic cloves',base:3,unit:null,cat:'produce'},
+  ]},
+  r3: { base:3, ingredients: [
+    {name:'Soy sauce, low sodium',base:4.5,unit:'tbsp',cat:'pantry'},
+    {name:'Sesame oil',base:1.5,unit:'tbsp',cat:'pantry'},
+    {name:'Rice vinegar',base:1.5,unit:'tsp',cat:'pantry'},
+    {name:'Red pepper flakes',base:1.5,unit:'tsp',cat:'pantry'},
+    {name:'Avocado or neutral oil',base:3,unit:'tbsp',cat:'pantry'},
+    {name:'Brown rice (cooked)',base:3,unit:'cup',cat:'pantry'},
+    {name:'Edamame, shelled (frozen)',base:0.75,unit:'cup',cat:'pantry'},
+    {name:'Large shrimp, peeled & deveined',base:27,unit:'oz',cat:'meat'},
+    {name:'Red bell pepper',base:2,unit:'cup',cat:'produce'},
+    {name:'Snap peas',base:1.5,unit:'cup',cat:'produce'},
+    {name:'Green onions',base:3,unit:null,cat:'produce'},
+    {name:'Garlic cloves',base:4.5,unit:null,cat:'produce'},
+    {name:'Fresh ginger (1-inch piece)',base:1,unit:null,cat:'produce'},
+  ]},
+  r4: { base:3, ingredients: [
+    {name:'Canned albacore tuna, water-packed',base:15,unit:'oz',cat:'pantry'},
+    {name:'Cannellini beans (canned)',base:2.25,unit:'cup',cat:'pantry'},
+    {name:'Capers',base:2,unit:'tbsp',cat:'pantry'},
+    {name:'Extra virgin olive oil',base:4.5,unit:'tbsp',cat:'pantry'},
+    {name:'Dijon mustard',base:1.5,unit:'tsp',cat:'pantry'},
+    {name:'Salt',base:0.75,unit:'tsp',cat:'pantry'},
+    {name:'Black pepper',base:0.5,unit:'tsp',cat:'pantry'},
+    {name:'Arugula',base:4.5,unit:'cup',cat:'produce'},
+    {name:'Cherry tomatoes',base:1.5,unit:'cup',cat:'produce'},
+    {name:'Red onion',base:0.25,unit:null,cat:'produce'},
+    {name:'Lemons',base:3,unit:null,cat:'produce'},
+    {name:'Garlic cloves',base:1.5,unit:null,cat:'produce'},
+  ]},
+  r5: { base:3, ingredients: [
+    {name:'Canned chickpeas',base:2.25,unit:'cup',cat:'pantry'},
+    {name:'Chicken broth or water',base:0.75,unit:'cup',cat:'pantry'},
+    {name:'Olive oil',base:3,unit:'tbsp',cat:'pantry'},
+    {name:'Cumin',base:3,unit:'tsp',cat:'pantry'},
+    {name:'Smoked paprika',base:1.5,unit:'tsp',cat:'pantry'},
+    {name:'Turmeric',base:0.75,unit:'tsp',cat:'pantry'},
+    {name:'Red pepper flakes',base:0.75,unit:'tsp',cat:'pantry'},
+    {name:'Salt',base:1.25,unit:'tsp',cat:'pantry'},
+    {name:'Black pepper',base:0.75,unit:'tsp',cat:'pantry'},
+    {name:'Bone-in chicken thighs, skin removed',base:6,unit:null,cat:'meat'},
+    {name:'Zucchini (medium)',base:3,unit:null,cat:'produce'},
+    {name:'Kale, stems removed',base:4.5,unit:'cup',cat:'produce'},
+    {name:'Garlic cloves',base:6,unit:null,cat:'produce'},
+    {name:'Lemons',base:1.5,unit:null,cat:'produce'},
+  ]}
+};
+
+const CAT_ORDER  = ['pantry','dairy','meat','produce'];
+const CAT_LABELS = {pantry:'Canned / Boxed / Packaged',dairy:'Dairy & Eggs',meat:'Meat & Seafood',produce:'Produce'};
+const servings   = {r1:3,r2:3,r3:3,r4:3,r5:3};
+
+function load(k,d){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+const cookCounts = load('zt_cookCounts',{r1:0,r2:0,r3:0,r4:0,r5:0});
+const ratings    = load('zt_ratings',   {r1:0,r2:0,r3:0,r4:0,r5:0});
+
+function fmtQty(val){
+  if(val===0)return'0';
+  const neg=val<0;val=Math.abs(val);
+  const whole=Math.floor(val),frac=val-whole;
+  const fr=[[1,4,'\u00bc'],[1,3,'\u2153'],[1,2,'\u00bd'],[2,3,'\u2154'],[3,4,'\u00be']];
+  let fs='';
+  for(const[n,d,s]of fr){if(Math.abs(frac-n/d)<0.04){fs=s;break;}}
+  if(!fs&&frac>0.04)fs=frac.toFixed(1).replace(/^0/,'');
+  const r=(whole?whole+'':'')+(whole&&fs?' ':'')+fs||val.toFixed(1);
+  return(neg?'-':'')+r;
+}
+
+function renderIngredients(rid){
+  const el=document.getElementById('ing-'+rid);if(!el)return;
+  const f=servings[rid]/RECIPES[rid].base;
+  el.innerHTML=RECIPES[rid].ingredients.map(i=>{
+    const q=fmtQty(i.base*f)+(i.unit?' '+i.unit:'');
+    return`<li><span class="ing-qty">${q}</span> ${i.name}</li>`;
+  }).join('');
+}
+
+function renderShopList(rid){
+  const el=document.getElementById('shop-'+rid);if(!el)return;
+  const f=servings[rid]/RECIPES[rid].base;
+  const byC={};CAT_ORDER.forEach(c=>byC[c]=[]);
+  RECIPES[rid].ingredients.forEach(i=>(byC[i.cat]||byC['pantry']).push(i));
+  let h='';
+  CAT_ORDER.forEach(cat=>{
+    const ings=byC[cat];if(!ings.length)return;
+    h+=`<div class="shop-category">${CAT_LABELS[cat]}</div>`;
+    ings.forEach((ing,i)=>{
+      const key=`${rid}-${cat}-${i}`;
+      const q=fmtQty(ing.base*f)+(ing.unit?' '+ing.unit:'');
+      h+=`<div class="shop-item" id="shopitem-${key}"><span class="shop-item-check" id="shopcheck-${key}" onclick="toggleCheck('${key}')"></span><span class="shop-item-name" id="shopname-${key}">${ing.name}</span><span class="shop-item-qty" id="shopqty-${key}">${q}</span></div>`;
+    });
+  });
+  el.innerHTML=h;
+}
+
+function changeServings(rid,delta){
+  servings[rid]=Math.max(1,servings[rid]+delta);
+  document.getElementById('srv-'+rid).textContent=servings[rid];
+  renderIngredients(rid);renderShopList(rid);
+}
+
+function renderStars(rid){
+  const el=document.getElementById('stars-'+rid);if(!el)return;
+  const r=ratings[rid]||0;
+  el.innerHTML=[1,2,3,4,5].map(n=>`<button class="star${n<=r?' lit':''}" onclick="setRating('${rid}',${n})">&#x2605;</button>`).join('');
+}
+function setRating(rid,n){
+  ratings[rid]=(ratings[rid]===n)?0:n;save('zt_ratings',ratings);
+  renderStars(rid);renderCardStats(rid);
+}
+
+function renderCardStats(rid){
+  const se=document.getElementById('card-stars-'+rid);
+  const ce=document.getElementById('card-count-'+rid);
+  if(se){const r=ratings[rid]||0;se.innerHTML=[1,2,3,4,5].map(n=>`<span class="card-star-d${n<=r?' lit':''}">\u2605</span>`).join('');}
+  if(ce)ce.textContent=cookCounts[rid]||0;
+}
+
+function adjCooked(rid,delta){
+  cookCounts[rid]=Math.max(0,(cookCounts[rid]||0)+delta);
+  save('zt_cookCounts',cookCounts);
+  document.getElementById('count-'+rid).textContent=cookCounts[rid];
+  renderCardStats(rid);
+}
+
+function copyMacros(codeId,btn){
+  navigator.clipboard.writeText(document.getElementById(codeId).textContent).then(()=>{
+    btn.textContent='\u2713 Copied';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy for ZepTrack';btn.classList.remove('copied');},2000);
+  });
+}
+
+function copyShopList(rid,btn){
+  const f=servings[rid]/RECIPES[rid].base;
+  const lines=[];
+  CAT_ORDER.forEach(cat=>{
+    RECIPES[rid].ingredients.filter(i=>i.cat===cat).forEach((ing,i)=>{
+      const key=`${rid}-${cat}-${i}`;
+      const chk=document.getElementById('shopcheck-'+key);
+      if(chk&&chk.classList.contains('have-it')){
+        lines.push(`${ing.name} - ${fmtQty(ing.base*f)}${ing.unit?' '+ing.unit:''}`);
+      }
+    });
+  });
+  const text=lines.length?lines.join('\n'):'(nothing checked)';
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='\u2713 Copied';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy needed items';btn.classList.remove('copied');},2000);
+  });
+}
+
+function toggleCheck(key){
+  const chk=document.getElementById('shopcheck-'+key);
+  const nm=document.getElementById('shopname-'+key);
+  const qty=document.getElementById('shopqty-'+key);
+  const on=chk.classList.toggle('have-it');
+  chk.textContent=on?'\u2713':'';
+  nm.classList.toggle('have-it-text',on);
+  if(qty)qty.classList.toggle('have-it-qty',on);
+}
+
+const indexPage=document.getElementById('index-page');
+const backBtn=document.getElementById('back-btn');
+const allPages=document.querySelectorAll('.recipe-page');
+
+function showIndex(){
+  allPages.forEach(p=>p.classList.remove('active'));
+  indexPage.style.display='block';backBtn.classList.remove('visible');
+  window.scrollTo({top:0,behavior:'smooth'});history.pushState(null,'','#');
+}
+function showRecipe(id){
+  indexPage.style.display='none';
+  allPages.forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  backBtn.classList.add('visible');
+  renderIngredients(id);renderShopList(id);
+  window.scrollTo({top:0,behavior:'instant'});history.pushState(null,'','#'+id);
+}
+document.querySelectorAll('.recipe-card').forEach(c=>c.addEventListener('click',e=>e.preventDefault()));
+window.addEventListener('popstate',()=>{
+  const h=window.location.hash.replace('#','');
+  if(h&&document.getElementById(h))showRecipe(h);else showIndex();
+});
+
+function filterCards(q){
+  q=q.toLowerCase().trim();
+  let vis=0;
+  document.querySelectorAll('.recipe-card').forEach(c=>{
+    const show=!q||(c.dataset.search+' '+c.textContent).toLowerCase().includes(q);
+    c.style.display=show?'block':'none';if(show)vis++;
+  });
+  document.getElementById('no-results').style.display=vis===0?'block':'none';
+}
+
+// VERSION CHECKER
+let latestVersion=null;
+async function checkVersion(){
+  try{
+    const r=await fetch(GITHUB_VERSION_URL+'?t='+Date.now());
+    if(!r.ok)return;
+    const data=await r.json();
+    latestVersion=data;
+    if(data.version&&data.version!==APP_VERSION){
+      document.getElementById('update-badge').classList.add('visible');
+    }
+  }catch(e){}
+}
+function showUpdateModal(){
+  const el=document.getElementById('update-modal');
+  const body=document.getElementById('update-modal-body');
+  if(latestVersion){
+    body.innerHTML=`Current: <strong>v${APP_VERSION}</strong> &rarr; Available: <strong>v${latestVersion.version}</strong><br><br>${latestVersion.notes||''}`;
+  }
+  el.classList.add('visible');
+}
+function dismissUpdate(){document.getElementById('update-modal').classList.remove('visible');}
+function doUpdate(){window.location.reload(true);}
+
+// INIT
+['r1','r2','r3','r4','r5'].forEach(rid=>{
+  renderStars(rid);renderCardStats(rid);
+  const ce=document.getElementById('count-'+rid);
+  if(ce)ce.textContent=cookCounts[rid]||0;
+});
+checkVersion();
+</script>
+</body>
+</html>
